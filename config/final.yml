@@ -1,0 +1,5 @@
+final_name: otel-collector
+blobstore:
+  provider: gcs
+  options:
+    bucket_name: otel-collector-release-blobs
