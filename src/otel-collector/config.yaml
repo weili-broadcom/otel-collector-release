@@ -4,7 +4,7 @@ dist:
   description: Cloud Foundry OpenTelemetry Collector
   otelcol_version: 0.91.0
   output_path: otel-collector
-  version: 0.3.2
+  version: 0.4.0
 exporters:
   - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.91.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.91.0
