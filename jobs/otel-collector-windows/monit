@@ -6,6 +6,9 @@
     "env" => {"NO_WINDOWS_SERVICE" => "1"}
   }
 
+  memory_mib = p('limits.memory_mib')
+  process['env']['GOMEMLIMIT'] = "#{(memory_mib.to_i * 0.80).floor}MiB"
+
   monit = { "processes" => [] }
   if p('enabled')
     monit["processes"] = [process]
