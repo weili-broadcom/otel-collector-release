@@ -471,5 +471,136 @@ shared_examples_for 'common config.yml' do
         end
       end
     end
+
+    describe 'secret interpolation' do
+      let(:config) do
+        {
+          'exporters' => {
+            'otlp' => {
+              'endpoint' => 'otelcol:4317',
+              'tls' => {
+                'cert_pem' => '{{ .testsecret.cert }}',
+                'key_pem' => '{{ .testsecret.key }}',
+                'ca_pem' => '{{ .testsecret.ca }}'
+              },
+              'headers' => {
+                'auth' => '{{ .anothersecret.secret }}'
+              }
+            }
+          },
+          'service' => {
+            'pipelines' => {
+              'traces' => {
+                'exporters' => ['otlp']
+              },
+              'metrics' => {
+                'exporters' => ['otlp']
+              }
+            }
+          }
+        }
+      end
+      let(:properties) do
+        {
+          'config' => YAML.dump(config),
+          'secrets' => [
+            {
+              'name' => 'testsecret',
+              'cert' => '-----BEGIN CERTIFICATE-----
+MIIE4jCCAsqgAwIBAgIUO/DRqVeXUmewgpy33MkQpe0ME7YwDQYJKoZIhvcNAQEL
+BQAwgZkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQH
+DA1TYW4gRnJhbmNpc2NvMQwwCgYDVQQKDANNQVAxDzANBgNVBAsMBlZNd2FyZTEV
+MBMGA1UEAwwMVG9vbHNtaXRoc0NBMScwJQYJKoZIhvcNAQkBFhhjZi10b29sc21p
+dGhzQHdtd2FyZS5jb20wHhcNMjQwODI3MjEzMDU3WhcNMjYwODI4MjEzMDU3WjAy
+MQswCQYDVQQGEwJVUzEQMA4GA1UECgwHUGl2b3RhbDERMA8GA1UEAwwIYmxhaC5j
+b20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDT0qMGluiM2jrZ0k/3
+YjSy6/55NJttugG+RjfWXIPTti3ySHBgf5oOhgE1w/TMH8vQC1QBXSi3erw+WlZV
+GW7pSs1AwPiTDJWlCmsyabY3En5+V+yFTI7CtA5uxC8Yo6szfHxk+RlZUcE8S7vd
+0Lty0hahK0q+cNLqDfWDJ4jgJWKkoT9yGKSF+LLoUpJXqzI7d0soevzAolXEGb6X
+O8ORQDYbT/onCwq9MKb4jRVE+KYT2+ajdKI0MPR4/3JA8/o2O4BNTf6MOnSFKWLe
+CYXdtcqaDE2GqK3OUnlH2Tv2lS+1KCGq9800MfXJ/ln7kuetPBz7MelR6Ph9SWqk
+Ev3NAgMBAAGjgYcwgYQwHQYDVR0OBBYEFPF+Zo5VBV/ZCDQk02HBER1j5WDtMB8G
+A1UdIwQYMBaAFMGM2idsRltlr/D2KjmlZE2sdFgVMB0GA1UdJQQWMBQGCCsGAQUF
+BwMCBggrBgEFBQcDATAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0RBAwwCoIIYmxhaC5j
+b20wDQYJKoZIhvcNAQELBQADggIBALkKkStBbqSJmhAgXsfxMyX+ksuf0iKchP14
+/PIq9srwy6S6urc+9ajp7qNDvM+xaj8w2poUF4CPPVS7RqiRf5wJr2ZJDq0lcXbU
+M+qqKth+6VkOPUsOP+5b6j/aUoo1zTxqiP6q2bJ2igujHfSJ4H3JenD2VogqzrDS
+hNU0m4vupB79dlqPUWkkhkyQ+83GMLWzgwatmjj11jBeOPHNXZJikUODxvwVqscZ
+iYYdVzzSqVJCxinwk1eGvGXeGsSR4EBsLpF9g18L57PPT8OfDHM7KnBdwhSFkLuU
+gtd7i3u9NSScr7g3beQIBEi+ho/FR/pPcU453ilECsza3esMKAubr1nE6Be3tlhL
+EZpwAdkj3lZVnAMcXyNo20mgYK7yVoVa+rS4E9oyTcldjqBUvFnFtqbB70h5ZZ/v
+71uRB07WqE6zdvslcHtgWls5mM4APKhxjuszmY4GgEEQ7SJObQSzC53avPhlu+TB
+3EWIdIjpvyNSEsC6yIVQrKJ6ejcqV9+OVPFQyHQ2yzyBDVSVVU6EqYFUJy3zmHp+
+mm95ZMr9Q04nwi5//MNW7Yuw7XmjFtTlN6ybHrc82jNWDJx5GvZkHj0Qmg6TMYu2
+hqmaUsNEA27fgk2HRuHUOJ+2EFFlCVZMLR7vN/JVE/LhZ2CdzoyMOkH0vtKophTg
+HqBTRxft
+-----END CERTIFICATE-----',
+              'key' => 'bar',
+              'ca' => 'baz'
+            },
+            {
+              'name' => 'anothersecret',
+              'secret' => 'foobarbaz'
+            }
+          ]
+        }
+      end
+
+      it 'interpolates the config and renders it successfully' do
+        expect(rendered['exporters']['otlp']['tls']['cert_pem']).to eq("-----BEGIN CERTIFICATE-----\nMIIE4jCCAsqgAwIBAgIUO/DRqVeXUmewgpy33MkQpe0ME7YwDQYJKoZIhvcNAQEL\nBQAwgZkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQH\nDA1TYW4gRnJhbmNpc2NvMQwwCgYDVQQKDANNQVAxDzANBgNVBAsMBlZNd2FyZTEV\nMBMGA1UEAwwMVG9vbHNtaXRoc0NBMScwJQYJKoZIhvcNAQkBFhhjZi10b29sc21p\ndGhzQHdtd2FyZS5jb20wHhcNMjQwODI3MjEzMDU3WhcNMjYwODI4MjEzMDU3WjAy\nMQswCQYDVQQGEwJVUzEQMA4GA1UECgwHUGl2b3RhbDERMA8GA1UEAwwIYmxhaC5j\nb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDT0qMGluiM2jrZ0k/3\nYjSy6/55NJttugG+RjfWXIPTti3ySHBgf5oOhgE1w/TMH8vQC1QBXSi3erw+WlZV\nGW7pSs1AwPiTDJWlCmsyabY3En5+V+yFTI7CtA5uxC8Yo6szfHxk+RlZUcE8S7vd\n0Lty0hahK0q+cNLqDfWDJ4jgJWKkoT9yGKSF+LLoUpJXqzI7d0soevzAolXEGb6X\nO8ORQDYbT/onCwq9MKb4jRVE+KYT2+ajdKI0MPR4/3JA8/o2O4BNTf6MOnSFKWLe\nCYXdtcqaDE2GqK3OUnlH2Tv2lS+1KCGq9800MfXJ/ln7kuetPBz7MelR6Ph9SWqk\nEv3NAgMBAAGjgYcwgYQwHQYDVR0OBBYEFPF+Zo5VBV/ZCDQk02HBER1j5WDtMB8G\nA1UdIwQYMBaAFMGM2idsRltlr/D2KjmlZE2sdFgVMB0GA1UdJQQWMBQGCCsGAQUF\nBwMCBggrBgEFBQcDATAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0RBAwwCoIIYmxhaC5j\nb20wDQYJKoZIhvcNAQELBQADggIBALkKkStBbqSJmhAgXsfxMyX+ksuf0iKchP14\n/PIq9srwy6S6urc+9ajp7qNDvM+xaj8w2poUF4CPPVS7RqiRf5wJr2ZJDq0lcXbU\nM+qqKth+6VkOPUsOP+5b6j/aUoo1zTxqiP6q2bJ2igujHfSJ4H3JenD2VogqzrDS\nhNU0m4vupB79dlqPUWkkhkyQ+83GMLWzgwatmjj11jBeOPHNXZJikUODxvwVqscZ\niYYdVzzSqVJCxinwk1eGvGXeGsSR4EBsLpF9g18L57PPT8OfDHM7KnBdwhSFkLuU\ngtd7i3u9NSScr7g3beQIBEi+ho/FR/pPcU453ilECsza3esMKAubr1nE6Be3tlhL\nEZpwAdkj3lZVnAMcXyNo20mgYK7yVoVa+rS4E9oyTcldjqBUvFnFtqbB70h5ZZ/v\n71uRB07WqE6zdvslcHtgWls5mM4APKhxjuszmY4GgEEQ7SJObQSzC53avPhlu+TB\n3EWIdIjpvyNSEsC6yIVQrKJ6ejcqV9+OVPFQyHQ2yzyBDVSVVU6EqYFUJy3zmHp+\nmm95ZMr9Q04nwi5//MNW7Yuw7XmjFtTlN6ybHrc82jNWDJx5GvZkHj0Qmg6TMYu2\nhqmaUsNEA27fgk2HRuHUOJ+2EFFlCVZMLR7vN/JVE/LhZ2CdzoyMOkH0vtKophTg\nHqBTRxft\n-----END CERTIFICATE-----")
+        expect(rendered['exporters']['otlp']['tls']['key_pem']).to eq('bar')
+        expect(rendered['exporters']['otlp']['tls']['ca_pem']).to eq('baz')
+        expect(rendered['exporters']['otlp']['headers']['auth']).to eq('foobarbaz')
+      end
+
+      context 'when no secrets exist for template variables' do
+        before do
+          properties['secrets'][0]['key'] = ''
+          properties['secrets'][0]['ca'] = nil
+          properties['secrets'].delete_at(1)
+        end
+
+        it 'raises an error' do
+          expect { rendered }.to raise_error(/The following template variables are missing secrets: \['{{ .testsecret.key }}', '{{ .testsecret.ca }}', '{{ .anothersecret.secret }}'\]/)
+        end
+      end
+
+      context 'when no template variables exist for a secret' do
+        before do
+          config['exporters']['otlp'].delete('headers')
+        end
+
+        it 'raises an error' do
+          expect { rendered }.to raise_error(/The following secrets are unused: \['anothersecret.secret'\]/)
+        end
+      end
+
+      context 'when a template variable uses differing amounts of space separation' do
+        before do
+          config['exporters']['otlp']['tls']['cert_pem'] = '{{.testsecret.cert}}'
+          config['exporters']['otlp']['tls']['key_pem'] = '{{        .testsecret.key}}'
+          config['exporters']['otlp']['tls']['ca_pem'] = '{{   .testsecret.ca     }}'
+        end
+
+        it 'interpolates the config and renders it successfully' do
+          expect(rendered['exporters']['otlp']['tls']['cert_pem']).to eq("-----BEGIN CERTIFICATE-----\nMIIE4jCCAsqgAwIBAgIUO/DRqVeXUmewgpy33MkQpe0ME7YwDQYJKoZIhvcNAQEL\nBQAwgZkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQH\nDA1TYW4gRnJhbmNpc2NvMQwwCgYDVQQKDANNQVAxDzANBgNVBAsMBlZNd2FyZTEV\nMBMGA1UEAwwMVG9vbHNtaXRoc0NBMScwJQYJKoZIhvcNAQkBFhhjZi10b29sc21p\ndGhzQHdtd2FyZS5jb20wHhcNMjQwODI3MjEzMDU3WhcNMjYwODI4MjEzMDU3WjAy\nMQswCQYDVQQGEwJVUzEQMA4GA1UECgwHUGl2b3RhbDERMA8GA1UEAwwIYmxhaC5j\nb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDT0qMGluiM2jrZ0k/3\nYjSy6/55NJttugG+RjfWXIPTti3ySHBgf5oOhgE1w/TMH8vQC1QBXSi3erw+WlZV\nGW7pSs1AwPiTDJWlCmsyabY3En5+V+yFTI7CtA5uxC8Yo6szfHxk+RlZUcE8S7vd\n0Lty0hahK0q+cNLqDfWDJ4jgJWKkoT9yGKSF+LLoUpJXqzI7d0soevzAolXEGb6X\nO8ORQDYbT/onCwq9MKb4jRVE+KYT2+ajdKI0MPR4/3JA8/o2O4BNTf6MOnSFKWLe\nCYXdtcqaDE2GqK3OUnlH2Tv2lS+1KCGq9800MfXJ/ln7kuetPBz7MelR6Ph9SWqk\nEv3NAgMBAAGjgYcwgYQwHQYDVR0OBBYEFPF+Zo5VBV/ZCDQk02HBER1j5WDtMB8G\nA1UdIwQYMBaAFMGM2idsRltlr/D2KjmlZE2sdFgVMB0GA1UdJQQWMBQGCCsGAQUF\nBwMCBggrBgEFBQcDATAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0RBAwwCoIIYmxhaC5j\nb20wDQYJKoZIhvcNAQELBQADggIBALkKkStBbqSJmhAgXsfxMyX+ksuf0iKchP14\n/PIq9srwy6S6urc+9ajp7qNDvM+xaj8w2poUF4CPPVS7RqiRf5wJr2ZJDq0lcXbU\nM+qqKth+6VkOPUsOP+5b6j/aUoo1zTxqiP6q2bJ2igujHfSJ4H3JenD2VogqzrDS\nhNU0m4vupB79dlqPUWkkhkyQ+83GMLWzgwatmjj11jBeOPHNXZJikUODxvwVqscZ\niYYdVzzSqVJCxinwk1eGvGXeGsSR4EBsLpF9g18L57PPT8OfDHM7KnBdwhSFkLuU\ngtd7i3u9NSScr7g3beQIBEi+ho/FR/pPcU453ilECsza3esMKAubr1nE6Be3tlhL\nEZpwAdkj3lZVnAMcXyNo20mgYK7yVoVa+rS4E9oyTcldjqBUvFnFtqbB70h5ZZ/v\n71uRB07WqE6zdvslcHtgWls5mM4APKhxjuszmY4GgEEQ7SJObQSzC53avPhlu+TB\n3EWIdIjpvyNSEsC6yIVQrKJ6ejcqV9+OVPFQyHQ2yzyBDVSVVU6EqYFUJy3zmHp+\nmm95ZMr9Q04nwi5//MNW7Yuw7XmjFtTlN6ybHrc82jNWDJx5GvZkHj0Qmg6TMYu2\nhqmaUsNEA27fgk2HRuHUOJ+2EFFlCVZMLR7vN/JVE/LhZ2CdzoyMOkH0vtKophTg\nHqBTRxft\n-----END CERTIFICATE-----")
+          expect(rendered['exporters']['otlp']['tls']['key_pem']).to eq('bar')
+          expect(rendered['exporters']['otlp']['tls']['ca_pem']).to eq('baz')
+          expect(rendered['exporters']['otlp']['headers']['auth']).to eq('foobarbaz')
+        end
+      end
+
+      context 'when template variables are not formatted correctly' do
+        before do
+          config['exporters']['otlp']['tls']['cert_pem'] = '{{testsecret.cert}}'
+          config['exporters']['otlp']['tls']['key_pem'] = '{{ .testsecret }}'
+          config['exporters']['otlp']['tls']['ca_pem'] = "{{\n .testsecret.ca \n}}"
+        end
+
+        it 'does not match secrets to those variables' do
+          expect { rendered }.to raise_error(/The following secrets are unused: \['testsecret.cert', 'testsecret.key', 'testsecret.ca'\]/)
+        end
+      end
+    end
   end
 end
