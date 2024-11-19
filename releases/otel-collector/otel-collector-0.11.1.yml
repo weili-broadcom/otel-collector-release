@@ -1,0 +1,44 @@
+name: otel-collector
+version: 0.11.1
+commit_hash: 9dd472d
+uncommitted_changes: false
+jobs:
+- name: otel-collector
+  version: 9db1189dd95ea256c4d14d0d6d13fde7ab137696c072c614bd7f7f7dd89e52b4
+  fingerprint: 9db1189dd95ea256c4d14d0d6d13fde7ab137696c072c614bd7f7f7dd89e52b4
+  sha1: sha256:0000fd48486d408c10e9ba82dfc57235a010919a44ca68c80d19454bb0a1c65d
+  packages:
+  - otel-collector
+- name: otel-collector-windows
+  version: e5489b5f5b7d677b12086a17c218e916e79ffacf010d690988424065c9a62f34
+  fingerprint: e5489b5f5b7d677b12086a17c218e916e79ffacf010d690988424065c9a62f34
+  sha1: sha256:3c72004926cd322aac6d3145ff6a6006e5a2e7d9a6154b8b1906f2624764d2d4
+  packages:
+  - otel-collector-windows
+packages:
+- name: golang-1.22-linux
+  version: e5be94e40f172c6cc6e39ccbfbdc350690604fe174db7e3bc4d3684a1801b8e5
+  fingerprint: e5be94e40f172c6cc6e39ccbfbdc350690604fe174db7e3bc4d3684a1801b8e5
+  sha1: sha256:c543c56a8c6827c0b8a85780060c3414abe860f5167f8e00963faaaf35c1d3c0
+  dependencies: []
+- name: golang-1.22-windows
+  version: e0fc6126b8365b27c4bbdbe6a316e594154162f1bd567b36554065c63f5431f7
+  fingerprint: e0fc6126b8365b27c4bbdbe6a316e594154162f1bd567b36554065c63f5431f7
+  sha1: sha256:07dbd12682b13383fd113946db25f6366b463137014087059974c4b255c9ae57
+  dependencies: []
+- name: otel-collector
+  version: b21c5bc4af2fa880b0dd64df892f94c6b04b9658c6cd5a9e18575c277baea45c
+  fingerprint: b21c5bc4af2fa880b0dd64df892f94c6b04b9658c6cd5a9e18575c277baea45c
+  sha1: sha256:4689f32680d76415bec1468e42a17554279accdc677837f0a4a07f19b0730aac
+  dependencies:
+  - golang-1.22-linux
+- name: otel-collector-windows
+  version: c0f9e0d9d6887a0f722d5df9f977cf97f7db5c140a8bcbde73edc178425ded6d
+  fingerprint: c0f9e0d9d6887a0f722d5df9f977cf97f7db5c140a8bcbde73edc178425ded6d
+  sha1: sha256:a0f76128df6429c92c94e5e8ddf0200e8929f687e7fb0fcc7d06bde7ba095c45
+  dependencies:
+  - golang-1.22-windows
+license:
+  version: 4ae6931b32c1717b3671633b515c8fa60bd91c44e402ef7b9bc83d7e2a92e425
+  fingerprint: 4ae6931b32c1717b3671633b515c8fa60bd91c44e402ef7b9bc83d7e2a92e425
+  sha1: sha256:f1b863d681317c84d3d6639e3d54eb3445484d2f679979cb5aa9842b7b210182
